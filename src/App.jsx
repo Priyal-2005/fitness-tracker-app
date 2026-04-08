@@ -28,7 +28,7 @@ const LOWER_EXERCISES = [
 const DIET_MEALS = [
   { id: "m1", time: "8:30 AM",  icon: "🥣", name: "Breakfast",      desc: "Mess food (roti/paratha + sabzi + dal + curd) + fruit + peanut butter sandwich + Zincovit" },
   { id: "m2", time: "11:30 AM", icon: "🥜", name: "Mid-Morning",    desc: "Banana + peanuts/chana (any 1-2 if busy)" },
-  { id: "m3", time: "1:00 PM",  icon: "🍛", name: "Lunch",          desc: "Roti + sabzi + double dal + curd. Vitamin D3 after" },
+  { id: "m3", time: "1:00 PM",  icon: "🍛", name: "Lunch",          desc: "Roti + sabzi + double dal + curd" },
   { id: "m4", time: "5:00 PM",  icon: "🌰", name: "Evening Snack",  desc: "Roasted soya (30g) OR peanuts/chana" },
   { id: "m5", time: "6:30 PM",  icon: "⚡", name: "Pre-Workout",    desc: "Oats (60-80g) + banana + PB sandwich" },
   { id: "m6", time: "8:30 PM",  icon: "🍽️", name: "Dinner",        desc: "Roti + sabzi + double dal + curd - eat maximum" },
@@ -37,7 +37,6 @@ const DIET_MEALS = [
 
 const SUPPLEMENTS_LIST = [
   { id: "s1", name: "Zincovit",    timing: "After breakfast, daily",       icon: "🟡", color: "text-yellow-400", border: "border-yellow-800", bg: "bg-yellow-950/30" },
-  { id: "s2", name: "Vitamin D3",  timing: "After lunch, daily",           icon: "🔵", color: "text-blue-400",   border: "border-blue-800",   bg: "bg-blue-950/30"   },
   { id: "s3", name: "Keraglo Eva", timing: "Night, with dinner or after",  icon: "🟣", color: "text-purple-400", border: "border-purple-800", bg: "bg-purple-950/30" },
   { id: "s4", name: "Vitamin E",   timing: "Alternate days with food",     icon: "🟢", color: "text-green-400",  border: "border-green-800",  bg: "bg-green-950/30"  },
   { id: "s5", name: "Creatine",    timing: "Post-workout, start Month 3+", icon: "⚪", color: "text-slate-300",  border: "border-slate-700",  bg: "bg-slate-900/30"  },
@@ -164,6 +163,9 @@ function HomeScreen({ onNavigate }) {
   var workoutLog   = woLogResult[0];
   var todayWoStat  = workoutLog[today];
 
+  var todayWoStat = workoutLog[today];
+  var missedToday = !todayWoStat && todayType !== "rest";
+
   var suppResult   = useLS("supp_checks_" + today, {});
   var suppChecks   = suppResult[0];
   var suppDone     = SUPPLEMENTS_LIST.filter(function(s) { return suppChecks[s.id]; }).length;
@@ -174,6 +176,13 @@ function HomeScreen({ onNavigate }) {
 
   return (
     <div className="space-y-3">
+      {missedToday && (
+        <Card className="border-pink-800/40 bg-pink-950/20">
+          <div className="text-[12px] font-bold text-pink-400">
+            💛 Didn’t go today? That’s okay — try again tomorrow
+          </div>
+        </Card>
+      )}
       <Card className="bg-gradient-to-br from-[#0f2318] to-[#0e0f11] border-green-900/40">
         <div className="flex items-start justify-between">
           <div>
@@ -286,7 +295,6 @@ function HomeScreen({ onNavigate }) {
         <div className="text-[13px] font-bold text-white mb-2">💊 Supplement Reminders</div>
         <div className="space-y-1">
           <div className="text-[12px] text-[#8a8f99]">🟡 Zincovit — after breakfast</div>
-          <div className="text-[12px] text-[#8a8f99]">🔵 Vitamin D3 — after lunch</div>
           <div className="text-[12px] text-[#8a8f99]">🟣 Keraglo Eva — at night</div>
         </div>
         <button onClick={function() { onNavigate("supplements"); }} className="mt-2 text-[11px] text-yellow-400">Track today →</button>
@@ -343,7 +351,12 @@ function GymScreen() {
   }
 
   function setWeight(id, val) {
-    setWeightLog(function(prev) { return Object.assign({}, prev, { [id]: val }); });
+    var today = todayKey();
+    setWeightLog(function(prev) {
+      return Object.assign({}, prev, {
+        [id]: { value: val, updatedAt: today }
+      });
+    });
   }
 
   function markDayAs(status) {
@@ -430,7 +443,7 @@ function GymScreen() {
           <ExerciseCard key={ex.id} exercise={ex}
             status={gymChecks[ex.id] || null}
             onSetStatus={function(st) { setExerciseStatus(ex.id, st); }}
-            weight={weightLog[ex.id] || ""}
+            weight={weightLog[ex.id]?.value || ""}
             onWeightChange={function(v) { setWeight(ex.id, v); }}
             lowEnergy={lowEnergy} />
         ); })}
@@ -699,7 +712,7 @@ function ProgressScreen() {
   var slResult    = useLS("exercise_weight_log", {});
   var strengthLog = slResult[0];
   var allEx       = UPPER_EXERCISES.concat(LOWER_EXERCISES);
-  var loggedEx    = allEx.filter(function(e) { return strengthLog[e.id]; });
+  var loggedEx    = allEx.filter(function(e) { return strengthLog[e.id]?.value; });
 
   return (
     <div>
@@ -819,7 +832,12 @@ function ProgressScreen() {
             {loggedEx.map(function(ex) { return (
               <div key={ex.id} className="flex justify-between items-center">
                 <span className="text-[12px] text-[#8a8f99]">{ex.name}</span>
-                <span className="text-[12px] font-bold text-green-400">{strengthLog[ex.id]} kg</span>
+                <span className="text-[12px] font-bold text-green-400">{strengthLog[ex.id]?.value} kg</span>
+                {strengthLog[ex.id]?.updatedAt && (
+                  <div className="text-[10px] text-[#6b6f78]">
+                    updated {strengthLog[ex.id].updatedAt}
+                  </div>
+                )}
               </div>
             ); })}
           </div>
