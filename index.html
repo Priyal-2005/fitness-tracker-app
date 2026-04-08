@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <!-- Mobile viewport — viewport-fit=cover fills iPhone notch area -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Dark background rendered BEFORE React loads — prevents white flash -->
+    <style>html, body, #root { background: #0e0f11; color: #e8e9eb; }</style>
+
+    <!-- ── PWA: Android Chrome install / standalone behavior ─────────────── -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0e0f11" />
+
+    <!-- ── PWA: iOS Safari "Add to Home Screen" behavior ─────────────────── -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Fitness" />
+
+    <!-- ── Icons ─────────────────────────────────────────────────────────── -->
+    <!-- Android / general favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <!-- iOS home screen icon (Safari ignores manifest icons) -->
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
+
+    <!-- vite-plugin-pwa injects the manifest link tag automatically at build time -->
+
+    <title>Priyal's Fitness</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
