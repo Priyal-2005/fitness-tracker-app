@@ -5,13 +5,15 @@ import { useState, useEffect } from "react";
 // ─────────────────────────────────────────────
 
 const UPPER_EXERCISES = [
-  { id: "u1", name: "Incline Chest Press",   sets: "3", reps: "10–12", rest: "90s" },
-  { id: "u2", name: "Pec Deck Fly",          sets: "2", reps: "12–15", rest: "60s" },
-  { id: "u3", name: "Lat Pulldown",          sets: "4", reps: "10–12", rest: "90s" },
-  { id: "u4", name: "Rear Delt Fly",         sets: "2", reps: "12–15", rest: "60s" },
-  { id: "u5", name: "Shoulder Press",        sets: "3", reps: "10",    rest: "75s" },
-  { id: "u6", name: "Lateral Raises",        sets: "2", reps: "12–15", rest: "60s" },
-  { id: "u7", name: "Dumbbell Curls",        sets: "3", reps: "12",    rest: "60s" },
+  { id: "u1", name: "Incline Chest Press",     sets: "3", reps: "10-12", rest: "90s" },
+  { id: "u3", name: "Lat Pulldown",            sets: "3", reps: "10-12", rest: "90s" },
+  { id: "u8", name: "Seated Cable Row",        sets: "3", reps: "10-12", rest: "90s" },
+  { id: "u2", name: "Pec Deck Fly",            sets: "2", reps: "12-15", rest: "60s" },
+  { id: "u5", name: "Shoulder Press",          sets: "3", reps: "10-12", rest: "75s" },
+  { id: "u6", name: "Lateral Raises",          sets: "2", reps: "12-15", rest: "60s" },
+  { id: "u4", name: "Rear Delt Fly",           sets: "2", reps: "12-15", rest: "60s" },
+  { id: "u7", name: "Dumbbell Curls",          sets: "2", reps: "10-12", rest: "60s" },
+  { id: "u9", name: "DB Overhead Triceps Ext", sets: "2", reps: "10-12", rest: "60s" },
 ];
 
 const LOWER_EXERCISES = [
@@ -19,10 +21,19 @@ const LOWER_EXERCISES = [
   { id: "l2", name: "Lunges",                sets: "2", reps: "10/leg", rest: "75s" },
   { id: "l3", name: "Leg Curl",              sets: "3", reps: "12",     rest: "75s" },
   { id: "l4", name: "Leg Extension",         sets: "2", reps: "12",     rest: "60s" },
+  { id: "l8", name: "Glute Bridges",         sets: "2", reps: "15",     rest: "60s" },
+  { id: "l9", name: "Hip Abductor",          sets: "2", reps: "15-20",  rest: "60s" },
   { id: "l5", name: "Calf Raises",           sets: "3", reps: "15",     rest: "60s" },
-  { id: "l6", name: "Plank",                 sets: "2", reps: "30-45s", rest: "60s" },
   { id: "l7", name: "Back Extension",        sets: "2", reps: "12-15",  rest: "60s" },
-  { id: "l8", name: "Glute Bridges",         sets: "2", reps: "15",     rest: "60s", optional: true },
+  { id: "l6", name: "Plank",                 sets: "2", reps: "30-45s", rest: "60s" },
+];
+
+const LIGHT_EXERCISES = [
+  { id: "f1", name: "Cross Trainer",   sets: "1", reps: "10 min",  rest: "-" },
+  { id: "f2", name: "Rowing Machine",  sets: "1", reps: "10 min",  rest: "-" },
+  { id: "f3", name: "Crunches",        sets: "2", reps: "12-15",   rest: "45s" },
+  { id: "f4", name: "Plank",           sets: "2", reps: "30-45s",  rest: "45s" },
+  { id: "f5", name: "Bird Dog",        sets: "2", reps: "8-10/side", rest: "45s" },
 ];
 
 const DIET_MEALS = [
@@ -30,7 +41,7 @@ const DIET_MEALS = [
   { id: "m2", time: "11:30 AM", icon: "🥜", name: "Mid-Morning",    desc: "Banana + peanuts/chana (any 1-2 if busy)" },
   { id: "m3", time: "1:00 PM",  icon: "🍛", name: "Lunch",          desc: "Roti + sabzi + double dal + curd" },
   { id: "m4", time: "5:00 PM",  icon: "🌰", name: "Evening Snack",  desc: "Roasted soya (30g) OR peanuts/chana" },
-  { id: "m5", time: "6:30 PM",  icon: "⚡", name: "Pre-Workout",    desc: "Oats (60-80g) + banana + PB sandwich" },
+  { id: "m5", time: "6:00 PM",  icon: "⚡", name: "Pre-Workout",    desc: "PB sandwich (made fresh after class) + banana — zero prep" },
   { id: "m6", time: "8:30 PM",  icon: "🍽️", name: "Dinner",        desc: "Roti + sabzi + double dal + curd - eat maximum" },
   { id: "m7", time: "11:30 PM", icon: "🌙", name: "Night Snack",    desc: "Peanuts (30g) OR roasted soya OR peanut butter + Keraglo Eva" },
 ];
@@ -64,7 +75,7 @@ function getTodayType() {
   var d = new Date().getDay();
   if (d === 1 || d === 3) return "upper";
   if (d === 2 || d === 4) return "lower";
-  if (d === 6) return "light";
+  if (d === 5) return "light";
   return "rest";
 }
 
@@ -156,15 +167,13 @@ function HomeScreen({ onNavigate }) {
 
   var gymResult    = useLS("gym_checks_" + today, {});
   var gymChecks    = gymResult[0];
-  var allExercises = todayType === "upper" ? UPPER_EXERCISES : todayType === "lower" ? LOWER_EXERCISES : [];
+  var allExercises = todayType === "upper" ? UPPER_EXERCISES : todayType === "lower" ? LOWER_EXERCISES : todayType === "light" ? LIGHT_EXERCISES : [];
   var gymDoneCount = allExercises.filter(function(e) { return gymChecks[e.id] === "done"; }).length;
 
   var woLogResult  = useLS("workout_log", {});
   var workoutLog   = woLogResult[0];
   var todayWoStat  = workoutLog[today];
-
-  var todayWoStat = workoutLog[today];
-  var missedToday = !todayWoStat && todayType !== "rest";
+  var missedToday  = !todayWoStat && todayType !== "rest";
 
   var suppResult   = useLS("supp_checks_" + today, {});
   var suppChecks   = suppResult[0];
@@ -310,7 +319,7 @@ function HomeScreen({ onNavigate }) {
 function GymScreen() {
   var today     = todayKey();
   var todayType = getTodayType();
-  var initType  = (todayType === "rest" || todayType === "light") ? "upper" : todayType;
+  var initType  = todayType === "rest" ? "upper" : todayType;
 
   var activeTypeState = useState(initType);
   var activeType      = activeTypeState[0];
@@ -337,7 +346,7 @@ function GymScreen() {
   var streak     = strResult[0];
   var setStreak  = strResult[1];
 
-  var exercises   = activeType === "upper" ? UPPER_EXERCISES : LOWER_EXERCISES;
+  var exercises   = activeType === "upper" ? UPPER_EXERCISES : activeType === "lower" ? LOWER_EXERCISES : LIGHT_EXERCISES;
   var doneCount   = exercises.filter(function(e) { return gymChecks[e.id] === "done"; }).length;
   var skipCount   = exercises.filter(function(e) { return gymChecks[e.id] === "skipped"; }).length;
   var consistPct  = exercises.length > 0 ? Math.round((doneCount / exercises.length) * 100) : 0;
@@ -397,10 +406,10 @@ function GymScreen() {
 
       {/* Split selector */}
       <div className="flex gap-2 mb-3">
-        {["upper","lower"].map(function(type) { return (
+        {["upper","lower","light"].map(function(type) { return (
           <button key={type} onClick={function() { setActiveType(type); }}
             className={"flex-1 py-2.5 rounded-xl border text-[13px] font-bold transition-all " + (activeType === type ? "bg-green-950 border-green-600 text-green-400" : "bg-[#1a1b1e] border-[#2a2c30] text-[#6b6f78]")}>
-            {type === "upper" ? "💪 Upper" : "🦵 Lower"}
+            {type === "upper" ? "💪 Upper" : type === "lower" ? "🦵 Lower" : "🌤️ Light"}
           </button>
         ); })}
       </div>
@@ -850,25 +859,11 @@ function ProgressScreen() {
 }
 
 function WeeklySummaryCard() {
-  var d    = new Date();
-  var jan1 = new Date(d.getFullYear(), 0, 1);
-  var week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
-  var weekKey = d.getFullYear() + "-W" + week;
-
-  var weekData = {};
-  try { weekData = JSON.parse(localStorage.getItem("weekly_history") || "{}")[weekKey] || {}; } catch(e) {}
-
   var wlResult    = useLS("workout_log", {});
   var workoutLog  = wlResult[0];
   var woEntries   = Object.values(workoutLog);
   var gymDays     = woEntries.filter(function(v) { return v === "done"; }).length;
   var skippedDays = woEntries.filter(function(v) { return v === "skipped"; }).length;
-
-  var days      = Object.values(weekData);
-  var protDays  = days.filter(function(d) { return d.protein; }).length;
-  var totChecks = days.reduce(function(s, d) { return s + Object.values(d).filter(Boolean).length; }, 0);
-  var maxChecks = days.length * 3;
-  var pct       = maxChecks > 0 ? Math.round((totChecks / maxChecks) * 100) : 0;
 
   return (
     <Card>
@@ -881,14 +876,6 @@ function WeeklySummaryCard() {
         <div className="bg-[#0e0f11] border border-[#2a2c30] rounded-xl p-2.5 text-center">
           <div className="text-lg font-black text-yellow-400">{skippedDays}</div>
           <div className="text-[9px] text-[#6b6f78] uppercase mt-0.5">Skipped</div>
-        </div>
-        <div className="bg-[#0e0f11] border border-[#2a2c30] rounded-xl p-2.5 text-center">
-          <div className="text-lg font-black text-blue-400">{protDays}/7</div>
-          <div className="text-[9px] text-[#6b6f78] uppercase mt-0.5">Protein Days</div>
-        </div>
-        <div className="bg-[#0e0f11] border border-[#2a2c30] rounded-xl p-2.5 text-center">
-          <div className="text-lg font-black text-purple-400">{pct}%</div>
-          <div className="text-[9px] text-[#6b6f78] uppercase mt-0.5">Completion</div>
         </div>
       </div>
       {skippedDays > 0 && (
