@@ -94,7 +94,8 @@ All data is stored in **localStorage** on your device:
 - `supp_checks_YYYY-MM-DD` — daily supplement tracking
 - `daily_checklist` — workout/protein/meals checklist
 - `streak_data` — consecutive day streak
-- `weekly_history` — per-week completion data
+- `workout_log` — per-day workout status (done/skipped), used to compute weekly & all-time stats
+- `low_energy_YYYY-MM-DD` — low energy/period toggle per day
 
 Data resets per-day where appropriate (checklists, meal toggles).
 Weight log and strength log persist indefinitely.
@@ -106,7 +107,7 @@ Weight log and strength log persist indefinitely.
 | Tab | What it does |
 |---|---|
 | 🏠 Home | Today's workout type, quick stats, meal preview |
-| 🏋️ Gym | Upper/Lower split, checkbox per exercise, weight logging |
+| 🏋️ Gym | Upper/Lower/Light split, checkbox per exercise, weight logging |
 | 🍱 Diet | Meal toggles, daily checklist, protein quick-reference |
 | 💊 Supps | Supplement tracker (Zincovit, D3, Keraglo, etc.) |
 | 📈 Progress | Weight log, goal progress bar, strength log, streak |

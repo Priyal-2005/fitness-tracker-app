@@ -57,9 +57,30 @@ const SUPPLEMENTS_LIST = [
 // UTILS
 // ─────────────────────────────────────────────
 
-function todayKey() {
-  const d = new Date();
+function dateKey(d) {
   return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+function todayKey() {
+  return dateKey(new Date());
+}
+
+// Date keys for the current week (Monday–Sunday)
+function currentWeekKeys() {
+  var now = new Date();
+  var day = now.getDay(); // 0=Sun..6=Sat
+  var diffToMonday = day === 0 ? -6 : 1 - day;
+  var monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  var keys = [];
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    keys.push(dateKey(d));
+  }
+  return keys;
 }
 
 function useLS(key, def) {
@@ -858,10 +879,14 @@ function ProgressScreen() {
   );
 }
 
+// Number of designated workout days per week (Mon/Tue/Wed/Thu/Fri)
+var WORKOUT_DAYS_PER_WEEK = 5;
+
 function WeeklySummaryCard() {
   var wlResult    = useLS("workout_log", {});
   var workoutLog  = wlResult[0];
-  var woEntries   = Object.values(workoutLog);
+  var weekKeys    = currentWeekKeys();
+  var woEntries   = weekKeys.map(function(k) { return workoutLog[k]; }).filter(Boolean);
   var gymDays     = woEntries.filter(function(v) { return v === "done"; }).length;
   var skippedDays = woEntries.filter(function(v) { return v === "skipped"; }).length;
 
@@ -870,7 +895,7 @@ function WeeklySummaryCard() {
       <div className="text-[13px] font-bold text-white mb-2">📊 This Week</div>
       <div className="grid grid-cols-2 gap-2 mb-2">
         <div className="bg-[#0e0f11] border border-[#2a2c30] rounded-xl p-2.5 text-center">
-          <div className="text-lg font-black text-green-400">{gymDays}/4</div>
+          <div className="text-lg font-black text-green-400">{gymDays}/{WORKOUT_DAYS_PER_WEEK}</div>
           <div className="text-[9px] text-[#6b6f78] uppercase mt-0.5">Gym Days</div>
         </div>
         <div className="bg-[#0e0f11] border border-[#2a2c30] rounded-xl p-2.5 text-center">
