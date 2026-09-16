@@ -5,25 +5,22 @@ import { useState, useEffect } from "react";
 // ─────────────────────────────────────────────
 
 const UPPER_EXERCISES = [
-  { id: "u1", name: "Incline Chest Press",     sets: "3", reps: "10-12", rest: "90s" },
-  { id: "u3", name: "Lat Pulldown",            sets: "3", reps: "10-12", rest: "90s" },
-  { id: "u8", name: "Seated Cable Row",        sets: "3", reps: "10-12", rest: "90s" },
-  { id: "u2", name: "Pec Deck Fly",            sets: "2", reps: "12-15", rest: "60s" },
-  { id: "u5", name: "Shoulder Press",          sets: "3", reps: "10-12", rest: "75s" },
-  { id: "u6", name: "Lateral Raises",          sets: "2", reps: "12-15", rest: "60s" },
-  { id: "u4", name: "Rear Delt Fly",           sets: "2", reps: "12-15", rest: "60s" },
-  { id: "u7", name: "Dumbbell Curls",          sets: "2", reps: "10-12", rest: "60s" },
-  { id: "u9", name: "DB Overhead Triceps Ext", sets: "2", reps: "10-12", rest: "60s" },
+  { id: "u1", name: "Incline Chest Press",   sets: "3", reps: "10-12", rest: "90s" },
+  { id: "u3", name: "Lat Pulldown",          sets: "3", reps: "10-12", rest: "90s" },
+  { id: "u8", name: "Seated Cable Row",      sets: "3", reps: "10-12", rest: "90s" },
+  { id: "u2", name: "Pec Deck Fly",          sets: "3", reps: "12-15", rest: "60s" },
+  { id: "u5", name: "Shoulder Press",        sets: "3", reps: "10-12", rest: "75s" },
+  { id: "u4", name: "Rear Delt Fly",         sets: "3", reps: "12-15", rest: "60s" },
+  { id: "u7", name: "Dumbbell Curls",        sets: "2", reps: "10-12", rest: "60s" },
+  { id: "u10", name: "Rope Pushdown",        sets: "2", reps: "10-12", rest: "60s" },
 ];
 
 const LOWER_EXERCISES = [
   { id: "l1", name: "Leg Press",             sets: "3", reps: "10",     rest: "90s" },
-  { id: "l2", name: "Lunges",                sets: "2", reps: "10/leg", rest: "75s" },
   { id: "l3", name: "Leg Curl",              sets: "3", reps: "12",     rest: "75s" },
   { id: "l4", name: "Leg Extension",         sets: "2", reps: "12",     rest: "60s" },
-  { id: "l8", name: "Glute Bridges",         sets: "2", reps: "15",     rest: "60s" },
   { id: "l9", name: "Hip Abductor",          sets: "2", reps: "15-20",  rest: "60s" },
-  { id: "l5", name: "Calf Raises",           sets: "3", reps: "15",     rest: "60s" },
+  { id: "l10", name: "Hip Adductor",         sets: "2", reps: "15-20",  rest: "60s" },
   { id: "l7", name: "Back Extension",        sets: "2", reps: "12-15",  rest: "60s" },
   { id: "l6", name: "Plank",                 sets: "2", reps: "30-45s", rest: "60s" },
 ];
