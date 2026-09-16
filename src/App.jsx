@@ -35,10 +35,8 @@ const LIGHT_EXERCISES = [
 
 const DIET_MEALS = [
   { id: "m1", time: "8:30 AM",  icon: "🥣", name: "Breakfast",      desc: "Mess food (roti/paratha + sabzi + dal + curd) + fruit + peanut butter sandwich + Zincovit" },
-  { id: "m2", time: "11:30 AM", icon: "🥜", name: "Mid-Morning",    desc: "Banana + peanuts/chana (any 1-2 if busy)" },
   { id: "m3", time: "1:00 PM",  icon: "🍛", name: "Lunch",          desc: "Roti + sabzi + double dal + curd" },
-  { id: "m4", time: "5:00 PM",  icon: "🌰", name: "Evening Snack",  desc: "Roasted soya (30g) OR peanuts/chana" },
-  { id: "m5", time: "6:00 PM",  icon: "⚡", name: "Pre-Workout",    desc: "PB sandwich (made fresh after class) + banana — zero prep" },
+  { id: "m5", time: "6:00 PM",  icon: "⚡", name: "Pre-Workout",    desc: "Banana + bowl of oats" },
   { id: "m6", time: "8:30 PM",  icon: "🍽️", name: "Dinner",        desc: "Roti + sabzi + double dal + curd - eat maximum" },
   { id: "m7", time: "11:30 PM", icon: "🌙", name: "Night Snack",    desc: "Peanuts (30g) OR roasted soya OR peanut butter" },
 ];
