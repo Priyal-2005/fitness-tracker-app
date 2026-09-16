@@ -83,6 +83,21 @@ function currentWeekKeys() {
   return keys;
 }
 
+// Clears all Gym + Progress data (exercise logs, weight history, streak, etc.)
+// Leaves Diet and Supplements tracking untouched.
+function resetGymProgressData() {
+  var fixedKeys = ["exercise_weight_log", "workout_log", "streak_data", "weight_history", "goal_weight"];
+  fixedKeys.forEach(function(k) { localStorage.removeItem(k); });
+
+  var prefixes = ["gym_checks_", "low_energy_"];
+  for (var i = localStorage.length - 1; i >= 0; i--) {
+    var key = localStorage.key(i);
+    if (key && prefixes.some(function(p) { return key.indexOf(p) === 0; })) {
+      localStorage.removeItem(key);
+    }
+  }
+}
+
 function useLS(key, def) {
   const [val, setVal] = useState(function() {
     try { var s = localStorage.getItem(key); return s !== null ? JSON.parse(s) : def; }
@@ -875,6 +890,21 @@ function ProgressScreen() {
       )}
 
       <WeeklySummaryCard />
+
+      <Card className="mt-3 border-red-900/40">
+        <div className="text-[12px] font-bold text-red-400 mb-1">🗑️ Reset Gym & Progress Data</div>
+        <div className="text-[11px] text-[#8a8f99] mb-3">Clears exercise logs, weight history, streak and goal weight. Diet and Supplements tracking are not affected. This cannot be undone.</div>
+        <button
+          onClick={function() {
+            if (window.confirm("Reset all Gym and Progress data? This cannot be undone.")) {
+              resetGymProgressData();
+              window.location.reload();
+            }
+          }}
+          className="w-full bg-red-950/40 border border-red-800/50 text-red-400 font-bold py-2.5 rounded-xl text-[13px]">
+          Reset Gym & Progress Data
+        </button>
+      </Card>
     </div>
   );
 }
