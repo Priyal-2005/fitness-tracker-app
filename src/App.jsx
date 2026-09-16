@@ -40,14 +40,12 @@ const DIET_MEALS = [
   { id: "m4", time: "5:00 PM",  icon: "🌰", name: "Evening Snack",  desc: "Roasted soya (30g) OR peanuts/chana" },
   { id: "m5", time: "6:00 PM",  icon: "⚡", name: "Pre-Workout",    desc: "PB sandwich (made fresh after class) + banana — zero prep" },
   { id: "m6", time: "8:30 PM",  icon: "🍽️", name: "Dinner",        desc: "Roti + sabzi + double dal + curd - eat maximum" },
-  { id: "m7", time: "11:30 PM", icon: "🌙", name: "Night Snack",    desc: "Peanuts (30g) OR roasted soya OR peanut butter + Keraglo Eva" },
+  { id: "m7", time: "11:30 PM", icon: "🌙", name: "Night Snack",    desc: "Peanuts (30g) OR roasted soya OR peanut butter" },
 ];
 
 const SUPPLEMENTS_LIST = [
-  { id: "s1", name: "Zincovit",    timing: "After breakfast, daily",       icon: "🟡", color: "text-yellow-400", border: "border-yellow-800", bg: "bg-yellow-950/30" },
-  { id: "s3", name: "Keraglo Eva", timing: "Night, with dinner or after",  icon: "🟣", color: "text-purple-400", border: "border-purple-800", bg: "bg-purple-950/30" },
-  { id: "s4", name: "Vitamin E",   timing: "Alternate days with food",     icon: "🟢", color: "text-green-400",  border: "border-green-800",  bg: "bg-green-950/30"  },
-  { id: "s5", name: "Creatine",    timing: "Post-workout, start Month 3+", icon: "⚪", color: "text-slate-300",  border: "border-slate-700",  bg: "bg-slate-900/30"  },
+  { id: "s1", name: "Zincovit",  timing: "After breakfast, daily", icon: "🟡", color: "text-yellow-400", border: "border-yellow-800", bg: "bg-yellow-950/30" },
+  { id: "s6", name: "Livogen",   timing: "After lunch, daily",     icon: "🔴", color: "text-red-400",    border: "border-red-800",    bg: "bg-red-950/30"    },
 ];
 
 // ─────────────────────────────────────────────
@@ -337,7 +335,7 @@ function HomeScreen({ onNavigate }) {
         <div className="text-[13px] font-bold text-white mb-2">💊 Supplement Reminders</div>
         <div className="space-y-1">
           <div className="text-[12px] text-[#8a8f99]">🟡 Zincovit — after breakfast</div>
-          <div className="text-[12px] text-[#8a8f99]">🟣 Keraglo Eva — at night</div>
+          <div className="text-[12px] text-[#8a8f99]">🔴 Livogen — after lunch</div>
         </div>
         <button onClick={function() { onNavigate("supplements"); }} className="mt-2 text-[11px] text-yellow-400">Track today →</button>
       </Card>
@@ -686,15 +684,6 @@ function SupplementsScreen() {
           </button>
         ); })}
       </div>
-      <Card className="mt-4 border-[#1e4d2e]">
-        <div className="text-[12px] font-bold text-green-400 mb-2">📋 Notes</div>
-        <div className="space-y-1.5 text-[11px] text-[#8a8f99]">
-          <div>• Zincovit covers biotin + zinc — good for hair too</div>
-          <div>• Vitamin D3 with food for better absorption</div>
-          <div>• Creatine: start only after Month 2-3 of consistent training</div>
-          <div>• If hairfall persists after 2 months, consult a doctor</div>
-        </div>
-      </Card>
     </div>
   );
 }
