@@ -41,6 +41,11 @@ const DIET_MEALS = [
   { id: "m7", time: "11:30 PM", icon: "🌙", name: "Night Snack",    desc: "Peanuts (30g) OR roasted soya OR peanut butter" },
 ];
 
+const DAILY_CHECKLIST = [
+  { key: "workout", label: "Workout Done",        icon: "🏋️" },
+  { key: "meals",   label: "All Meals Completed",  icon: "🍽️" },
+];
+
 const SUPPLEMENTS_LIST = [
   { id: "s1", name: "Zincovit",  timing: "After breakfast, daily", icon: "🟡", color: "text-yellow-400", border: "border-yellow-800", bg: "bg-yellow-950/30" },
   { id: "s6", name: "Livogen",   timing: "After lunch, alternate days", icon: "🔴", color: "text-red-400",    border: "border-red-800",    bg: "bg-red-950/30"    },
@@ -76,10 +81,10 @@ function currentWeekKeys() {
   return keys;
 }
 
-// Clears all Gym + Progress data (exercise logs, weight history, streak, etc.)
-// Leaves Diet and Supplements tracking untouched.
+// Clears Gym + Progress session data (workout log, streak, body weight history).
+// Leaves per-exercise weights, Diet, and Supplements tracking untouched.
 function resetGymProgressData() {
-  var fixedKeys = ["exercise_weight_log", "workout_log", "streak_data", "weight_history", "goal_weight"];
+  var fixedKeys = ["workout_log", "streak_data", "weight_history", "goal_weight"];
   fixedKeys.forEach(function(k) { localStorage.removeItem(k); });
 
   var prefixes = ["gym_checks_", "low_energy_"];
@@ -289,9 +294,9 @@ function HomeScreen({ onNavigate }) {
         <button onClick={function() { onNavigate("diet"); }} className="text-left">
           <Card>
             <div className="text-[10px] text-[#6b6f78] uppercase tracking-wider mb-1">Today Diet</div>
-            <div className="text-xl font-black text-blue-400">{clDone}/3</div>
+            <div className="text-xl font-black text-blue-400">{clDone}/{DAILY_CHECKLIST.length}</div>
             <div className="text-[11px] text-[#8a8f99] mt-1">checklist items</div>
-            <ProgressBar value={clDone} max={3} color="bg-blue-500" />
+            <ProgressBar value={clDone} max={DAILY_CHECKLIST.length} color="bg-blue-500" />
           </Card>
         </button>
         <button onClick={function() { onNavigate("supplements"); }} className="text-left">
@@ -563,11 +568,7 @@ function ExerciseCard({ exercise, status, onSetStatus, weight, onWeightChange, l
 
 function DietScreen() {
   var today = todayKey();
-  var CHECKLIST = [
-    { key: "workout", label: "Workout Done",              icon: "🏋️" },
-    { key: "protein", label: "Protein Target Hit (~90g)", icon: "🥩" },
-    { key: "meals",   label: "All Meals Completed",       icon: "🍽️" },
-  ];
+  var CHECKLIST = DAILY_CHECKLIST;
 
   var mdResult     = useLS("meal_done_" + today, {});
   var mealDone     = mdResult[0];
@@ -877,7 +878,7 @@ function ProgressScreen() {
 
       <Card className="mt-3 border-red-900/40">
         <div className="text-[12px] font-bold text-red-400 mb-1">🗑️ Reset Gym & Progress Data</div>
-        <div className="text-[11px] text-[#8a8f99] mb-3">Clears exercise logs, weight history, streak and goal weight. Diet and Supplements tracking are not affected. This cannot be undone.</div>
+        <div className="text-[11px] text-[#8a8f99] mb-3">Clears workout log, streak, body weight history and goal weight. Per-exercise weights, Diet and Supplements tracking are not affected. This cannot be undone.</div>
         <button
           onClick={function() {
             if (window.confirm("Reset all Gym and Progress data? This cannot be undone.")) {
