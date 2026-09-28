@@ -26,8 +26,10 @@ const LOWER_EXERCISES = [
 ];
 
 const LIGHT_EXERCISES = [
+  { id: "f0", name: "Treadmill Run",   sets: "1", reps: "-",       rest: "-", type: "run" },
   { id: "f1", name: "Cross Trainer",   sets: "1", reps: "10 min",  rest: "-" },
   { id: "f2", name: "Rowing Machine",  sets: "1", reps: "10 min",  rest: "-" },
+  { id: "f6", name: "Skipping Rope",   sets: "2", reps: "1-2 min", rest: "45s" },
   { id: "f3", name: "Crunches",        sets: "2", reps: "12-15",   rest: "45s" },
   { id: "f4", name: "Plank",           sets: "2", reps: "30-45s",  rest: "45s" },
   { id: "f5", name: "Bird Dog",        sets: "2", reps: "8-10/side", rest: "45s" },
@@ -376,6 +378,10 @@ function GymScreen() {
   var weightLog  = wlogResult[0];
   var setWeightLog = wlogResult[1];
 
+  var trResult      = useLS("treadmill_log", []);
+  var treadmillLog    = trResult[0];
+  var setTreadmillLog = trResult[1];
+
   var strResult  = useLS("streak_data", { count: 0, lastDate: "" });
   var streak     = strResult[0];
   var setStreak  = strResult[1];
@@ -399,6 +405,13 @@ function GymScreen() {
       return Object.assign({}, prev, {
         [id]: { value: val, updatedAt: today }
       });
+    });
+  }
+
+  function logRun(distance, incline, speed) {
+    setTreadmillLog(function(prev) {
+      var filtered = prev.filter(function(e) { return e.date !== today; });
+      return filtered.concat([{ date: today, distance: distance, incline: incline, speed: speed }]).slice(-90);
     });
   }
 
@@ -482,14 +495,29 @@ function GymScreen() {
 
       {/* Exercises */}
       <div className="space-y-2">
-        {exercises.map(function(ex) { return (
-          <ExerciseCard key={ex.id} exercise={ex}
-            status={gymChecks[ex.id] || null}
-            onSetStatus={function(st) { setExerciseStatus(ex.id, st); }}
-            weight={weightLog[ex.id]?.value || ""}
-            onWeightChange={function(v) { setWeight(ex.id, v); }}
-            lowEnergy={lowEnergy} />
-        ); })}
+        {exercises.map(function(ex) {
+          if (ex.type === "run") {
+            var todayRun = treadmillLog.filter(function(e) { return e.date === today; })[0] || null;
+            var lastRun  = treadmillLog.length > 0 ? treadmillLog[treadmillLog.length - 1] : null;
+            return (
+              <RunExerciseCard key={ex.id} exercise={ex}
+                status={gymChecks[ex.id] || null}
+                onSetStatus={function(st) { setExerciseStatus(ex.id, st); }}
+                todayRun={todayRun}
+                lastRun={lastRun}
+                onLogRun={logRun}
+                lowEnergy={lowEnergy} />
+            );
+          }
+          return (
+            <ExerciseCard key={ex.id} exercise={ex}
+              status={gymChecks[ex.id] || null}
+              onSetStatus={function(st) { setExerciseStatus(ex.id, st); }}
+              weight={weightLog[ex.id]?.value || ""}
+              onWeightChange={function(v) { setWeight(ex.id, v); }}
+              lowEnergy={lowEnergy} />
+          );
+        })}
       </div>
 
       <Card className="mt-4 border-yellow-900/40">
@@ -555,6 +583,106 @@ function ExerciseCard({ exercise, status, onSetStatus, weight, onWeightChange, l
           </div>
           {lowEnergy && (
             <div className="mt-2 text-[11px] text-pink-400/80">💕 Use lighter weight today — that is totally fine.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RunExerciseCard({ exercise, status, onSetStatus, todayRun, lastRun, onLogRun, lowEnergy }) {
+  var openState = useState(false);
+  var open      = openState[0];
+  var setOpen   = openState[1];
+  var isDone    = status === "done";
+  var isSkipped = status === "skipped";
+
+  var prefill = todayRun || lastRun;
+  var distState   = useState(prefill ? String(prefill.distance) : "");
+  var distance    = distState[0];
+  var setDistance = distState[1];
+  var inclState   = useState(prefill ? String(prefill.incline) : "");
+  var incline     = inclState[0];
+  var setIncline  = inclState[1];
+  var spdState    = useState(prefill ? String(prefill.speed) : "");
+  var speed       = spdState[0];
+  var setSpeed    = spdState[1];
+
+  function save() {
+    var d = parseFloat(distance);
+    if (!d || isNaN(d) || d <= 0) return;
+    onLogRun(d, incline.trim(), speed.trim());
+  }
+
+  return (
+    <div className={"bg-[#1a1b1e] border rounded-xl overflow-hidden transition-all " + (isDone ? "border-green-800/60" : isSkipped ? "border-yellow-800/40" : "border-[#2a2c30]")}>
+      <div className="flex items-center p-3 gap-2">
+        <div className="flex gap-1.5 flex-shrink-0">
+          <button onClick={function() { onSetStatus("done"); }} title="Mark done"
+            className={"w-6 h-6 rounded-md border flex items-center justify-center text-[10px] font-black transition-all " + (isDone ? "bg-green-500 border-green-500 text-black" : "border-[#4a4d55] text-[#4a4d55]")}>
+            ✓
+          </button>
+          <button onClick={function() { onSetStatus("skipped"); }} title="Skip"
+            className={"w-6 h-6 rounded-md border flex items-center justify-center text-[11px] transition-all " + (isSkipped ? "bg-yellow-600 border-yellow-600 text-black" : "border-[#4a4d55] text-[#4a4d55]")}>
+            –
+          </button>
+        </div>
+
+        <button onClick={function() { setOpen(!open); }} className="flex-1 text-left min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className={"text-[13px] font-semibold " + (isDone ? "text-green-300 line-through" : isSkipped ? "text-yellow-400/70 line-through" : "text-white")}>
+              {exercise.name}
+            </span>
+          </div>
+          <div className="flex gap-1.5 mt-1">
+            {todayRun ? (
+              <>
+                <span className="text-[10px] bg-green-950 text-green-400 border border-green-900 px-1.5 py-0.5 rounded-full">{todayRun.distance}km</span>
+                {todayRun.incline && <span className="text-[10px] bg-blue-950 text-blue-400 border border-blue-900 px-1.5 py-0.5 rounded-full">{todayRun.incline}% incline</span>}
+                {todayRun.speed && <span className="text-[10px] bg-yellow-950 text-yellow-400 border border-yellow-900 px-1.5 py-0.5 rounded-full">{todayRun.speed}km/h</span>}
+              </>
+            ) : (
+              <span className="text-[10px] text-[#6b6f78]">Tap to log today's run</span>
+            )}
+          </div>
+        </button>
+
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className="text-[#6b6f78] text-xs">{open ? "▲" : "▼"}</span>
+        </div>
+      </div>
+
+      {open && (
+        <div className="px-3 pb-3 border-t border-[#2a2c30] pt-2 space-y-2">
+          <div className="grid grid-cols-3 gap-1.5">
+            <div>
+              <label className="text-[10px] text-[#6b6f78] block mb-1">Distance (km)</label>
+              <input type="number" min="0" step="0.1" value={distance}
+                onChange={function(e) { setDistance(e.target.value); }}
+                placeholder="km"
+                className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-green-600 focus:outline-none" />
+            </div>
+            <div>
+              <label className="text-[10px] text-[#6b6f78] block mb-1">Incline (%)</label>
+              <input type="number" min="0" step="0.5" value={incline}
+                onChange={function(e) { setIncline(e.target.value); }}
+                placeholder="%"
+                className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-blue-600 focus:outline-none" />
+            </div>
+            <div>
+              <label className="text-[10px] text-[#6b6f78] block mb-1">Speed (km/h)</label>
+              <input type="number" min="0" step="0.1" value={speed}
+                onChange={function(e) { setSpeed(e.target.value); }}
+                placeholder="km/h"
+                className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-yellow-600 focus:outline-none" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={save} className="bg-green-900 border border-green-700 text-green-400 px-3 py-1.5 rounded-lg text-[12px] font-bold">Log Run</button>
+            {todayRun && <span className="text-[11px] text-green-400">saved ✓</span>}
+          </div>
+          {lowEnergy && (
+            <div className="text-[11px] text-pink-400/80">💕 Slower pace / lower incline today — that is totally fine.</div>
           )}
         </div>
       )}
@@ -744,6 +872,10 @@ function ProgressScreen() {
   var allEx       = UPPER_EXERCISES.concat(LOWER_EXERCISES);
   var loggedEx    = allEx.filter(function(e) { return strengthLog[e.id]?.value; });
 
+  var trResult      = useLS("treadmill_log", []);
+  var treadmillLog    = trResult[0];
+  var totalKm          = treadmillLog.reduce(function(s, e) { return s + (parseFloat(e.distance) || 0); }, 0);
+
   return (
     <div>
       {streak.count > 0 && (
@@ -868,6 +1000,26 @@ function ProgressScreen() {
                     updated {strengthLog[ex.id].updatedAt}
                   </div>
                 )}
+              </div>
+            ); })}
+          </div>
+        </Card>
+      )}
+
+      {treadmillLog.length > 0 && (
+        <Card className="mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[13px] font-bold text-white">🏃 Running Log</div>
+            <div className="text-[12px] font-bold text-green-400">{totalKm.toFixed(1)} km total</div>
+          </div>
+          <div className="space-y-1.5">
+            {[].concat(treadmillLog).reverse().slice(0, 10).map(function(e, i) { return (
+              <div key={i} className="flex justify-between items-center py-1 border-b border-[#2a2c30] last:border-0">
+                <span className="text-[12px] text-[#8a8f99]">{e.date}</span>
+                <span className="text-[12px] font-bold text-white">{e.distance} km</span>
+                <span className="text-[10px] text-[#6b6f78]">
+                  {[e.incline && e.incline + "% incline", e.speed && e.speed + "km/h"].filter(Boolean).join(" · ")}
+                </span>
               </div>
             ); })}
           </div>
