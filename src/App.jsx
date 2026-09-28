@@ -638,8 +638,8 @@ function RunExerciseCard({ exercise, status, onSetStatus, todayRun, lastRun, onL
             {todayRun ? (
               <>
                 <span className="text-[10px] bg-green-950 text-green-400 border border-green-900 px-1.5 py-0.5 rounded-full">{todayRun.distance}km</span>
-                {todayRun.incline && <span className="text-[10px] bg-blue-950 text-blue-400 border border-blue-900 px-1.5 py-0.5 rounded-full">{todayRun.incline}% incline</span>}
-                {todayRun.speed && <span className="text-[10px] bg-yellow-950 text-yellow-400 border border-yellow-900 px-1.5 py-0.5 rounded-full">{todayRun.speed}km/h</span>}
+                {todayRun.incline && <span className="text-[10px] bg-blue-950 text-blue-400 border border-blue-900 px-1.5 py-0.5 rounded-full">incline {todayRun.incline}</span>}
+                {todayRun.speed && <span className="text-[10px] bg-yellow-950 text-yellow-400 border border-yellow-900 px-1.5 py-0.5 rounded-full">speed {todayRun.speed}</span>}
               </>
             ) : (
               <span className="text-[10px] text-[#6b6f78]">Tap to log today's run</span>
@@ -663,17 +663,17 @@ function RunExerciseCard({ exercise, status, onSetStatus, todayRun, lastRun, onL
                 className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-green-600 focus:outline-none" />
             </div>
             <div>
-              <label className="text-[10px] text-[#6b6f78] block mb-1">Incline (%)</label>
-              <input type="number" min="0" step="0.5" value={incline}
+              <label className="text-[10px] text-[#6b6f78] block mb-1">Incline (level)</label>
+              <input type="number" min="0" step="1" value={incline}
                 onChange={function(e) { setIncline(e.target.value); }}
-                placeholder="%"
+                placeholder="0-8"
                 className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-blue-600 focus:outline-none" />
             </div>
             <div>
-              <label className="text-[10px] text-[#6b6f78] block mb-1">Speed (km/h)</label>
-              <input type="number" min="0" step="0.1" value={speed}
+              <label className="text-[10px] text-[#6b6f78] block mb-1">Speed (level)</label>
+              <input type="number" min="0" step="1" value={speed}
                 onChange={function(e) { setSpeed(e.target.value); }}
-                placeholder="km/h"
+                placeholder="level"
                 className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-yellow-600 focus:outline-none" />
             </div>
           </div>
@@ -1018,7 +1018,7 @@ function ProgressScreen() {
                 <span className="text-[12px] text-[#8a8f99]">{e.date}</span>
                 <span className="text-[12px] font-bold text-white">{e.distance} km</span>
                 <span className="text-[10px] text-[#6b6f78]">
-                  {[e.incline && e.incline + "% incline", e.speed && e.speed + "km/h"].filter(Boolean).join(" · ")}
+                  {[e.incline && "incline " + e.incline, e.speed && "speed " + e.speed].filter(Boolean).join(" · ")}
                 </span>
               </div>
             ); })}
