@@ -26,13 +26,13 @@ const LOWER_EXERCISES = [
 ];
 
 const LIGHT_EXERCISES = [
-  { id: "f0", name: "Treadmill Run",   sets: "1", reps: "-",       rest: "-", type: "run" },
-  { id: "f1", name: "Cross Trainer",   sets: "1", reps: "10 min",  rest: "-" },
-  { id: "f2", name: "Rowing Machine",  sets: "1", reps: "10 min",  rest: "-" },
-  { id: "f6", name: "Skipping Rope",   sets: "2", reps: "1-2 min", rest: "45s" },
+  { id: "f0", name: "Treadmill Run",   sets: "1", reps: "-", rest: "-", type: "run", hasIncline: true },
+  { id: "f1", name: "Cross Trainer",   sets: "1", reps: "-", rest: "-", type: "run" },
+  { id: "f2", name: "Rowing Machine",  sets: "1", reps: "-", rest: "-", type: "run" },
+  { id: "f6", name: "Skipping Rope",   sets: "2", reps: "1-2 min", rest: "45s", noLog: true },
   { id: "f3", name: "Crunches",        sets: "2", reps: "12-15",   rest: "45s" },
   { id: "f4", name: "Plank",           sets: "2", reps: "30-45s",  rest: "45s" },
-  { id: "f5", name: "Bird Dog",        sets: "2", reps: "8-10/side", rest: "45s" },
+  { id: "f5", name: "Bird Dog",        sets: "2", reps: "8-10/side", rest: "45s", noLog: true },
 ];
 
 const DIET_MEALS = [
@@ -111,7 +111,7 @@ function getTodayType() {
   var d = new Date().getDay();
   if (d === 1 || d === 3) return "upper";
   if (d === 2 || d === 4) return "lower";
-  if (d === 5) return "light";
+  if (d === 5 || d === 6) return "light";
   return "rest";
 }
 
@@ -215,7 +215,7 @@ function HomeScreen({ onNavigate }) {
   var suppChecks   = suppResult[0];
   var suppDone     = SUPPLEMENTS_LIST.filter(function(s) { return suppChecks[s.id]; }).length;
 
-  var workoutLabel = { upper: "Upper Body Day", lower: "Lower Body Day", light: "Light / Active Rest", rest: "Rest Day 😴" }[todayType];
+  var workoutLabel = { upper: "Upper Body Day", lower: "Lower Body Day", light: "Cardio Day", rest: "Rest Day 😴" }[todayType];
   var workoutColor = todayType === "rest" ? "text-[#6b6f78]" : "text-green-400";
   var timeStr      = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 
@@ -378,9 +378,19 @@ function GymScreen() {
   var weightLog  = wlogResult[0];
   var setWeightLog = wlogResult[1];
 
-  var trResult      = useLS("treadmill_log", []);
-  var treadmillLog    = trResult[0];
-  var setTreadmillLog = trResult[1];
+  var cardioDefault = (function() {
+    try {
+      var legacy = localStorage.getItem("treadmill_log");
+      if (legacy && !localStorage.getItem("cardio_log")) {
+        var arr = JSON.parse(legacy);
+        if (Array.isArray(arr) && arr.length > 0) return { f0: arr };
+      }
+    } catch(e) {}
+    return {};
+  })();
+  var crResult   = useLS("cardio_log", cardioDefault);
+  var cardioLog    = crResult[0];
+  var setCardioLog = crResult[1];
 
   var strResult  = useLS("streak_data", { count: 0, lastDate: "" });
   var streak     = strResult[0];
@@ -408,10 +418,12 @@ function GymScreen() {
     });
   }
 
-  function logRun(distance, incline, speed) {
-    setTreadmillLog(function(prev) {
-      var filtered = prev.filter(function(e) { return e.date !== today; });
-      return filtered.concat([{ date: today, distance: distance, incline: incline, speed: speed }]).slice(-90);
+  function logRun(id, distance, incline, speed) {
+    setCardioLog(function(prev) {
+      var prevEntries = prev[id] || [];
+      var filtered = prevEntries.filter(function(e) { return e.date !== today; });
+      var nextEntries = filtered.concat([{ date: today, distance: distance, incline: incline, speed: speed }]).slice(-90);
+      return Object.assign({}, prev, { [id]: nextEntries });
     });
   }
 
@@ -456,7 +468,7 @@ function GymScreen() {
         {["upper","lower","light"].map(function(type) { return (
           <button key={type} onClick={function() { setActiveType(type); }}
             className={"flex-1 py-2.5 rounded-xl border text-[13px] font-bold transition-all " + (activeType === type ? "bg-green-950 border-green-600 text-green-400" : "bg-[#1a1b1e] border-[#2a2c30] text-[#6b6f78]")}>
-            {type === "upper" ? "💪 Upper" : type === "lower" ? "🦵 Lower" : "🌤️ Light"}
+            {type === "upper" ? "💪 Upper" : type === "lower" ? "🦵 Lower" : "🏃 Cardio"}
           </button>
         ); })}
       </div>
@@ -497,15 +509,16 @@ function GymScreen() {
       <div className="space-y-2">
         {exercises.map(function(ex) {
           if (ex.type === "run") {
-            var todayRun = treadmillLog.filter(function(e) { return e.date === today; })[0] || null;
-            var lastRun  = treadmillLog.length > 0 ? treadmillLog[treadmillLog.length - 1] : null;
+            var exLog    = cardioLog[ex.id] || [];
+            var todayRun = exLog.filter(function(e) { return e.date === today; })[0] || null;
+            var lastRun  = exLog.length > 0 ? exLog[exLog.length - 1] : null;
             return (
               <RunExerciseCard key={ex.id} exercise={ex}
                 status={gymChecks[ex.id] || null}
                 onSetStatus={function(st) { setExerciseStatus(ex.id, st); }}
                 todayRun={todayRun}
                 lastRun={lastRun}
-                onLogRun={logRun}
+                onLogRun={function(distance, incline, speed) { logRun(ex.id, distance, incline, speed); }}
                 lowEnergy={lowEnergy} />
             );
           }
@@ -536,6 +549,23 @@ function ExerciseCard({ exercise, status, onSetStatus, weight, onWeightChange, l
   var setOpen   = openState[1];
   var isDone    = status === "done";
   var isSkipped = status === "skipped";
+  var noLog     = !!exercise.noLog;
+
+  var content = (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <span className={"text-[13px] font-semibold " + (isDone ? "text-green-300 line-through" : isSkipped ? "text-yellow-400/70 line-through" : "text-white")}>
+        {exercise.name}
+      </span>
+      {exercise.optional && <span className="text-[9px] text-[#6b6f78] border border-[#2a2c30] px-1.5 py-0.5 rounded-full">opt</span>}
+    </div>
+  );
+  var badges = (
+    <div className="flex gap-1.5 mt-1">
+      <span className="text-[10px] bg-green-950 text-green-400 border border-green-900 px-1.5 py-0.5 rounded-full">{exercise.sets}s</span>
+      <span className="text-[10px] bg-blue-950 text-blue-400 border border-blue-900 px-1.5 py-0.5 rounded-full">{exercise.reps}r</span>
+      <span className="text-[10px] bg-yellow-950 text-yellow-400 border border-yellow-900 px-1.5 py-0.5 rounded-full">{exercise.rest}</span>
+    </div>
+  );
 
   return (
     <div className={"bg-[#1a1b1e] border rounded-xl overflow-hidden transition-all " + (isDone ? "border-green-800/60" : isSkipped ? "border-yellow-800/40" : "border-[#2a2c30]")}>
@@ -551,27 +581,27 @@ function ExerciseCard({ exercise, status, onSetStatus, weight, onWeightChange, l
           </button>
         </div>
 
-        <button onClick={function() { setOpen(!open); }} className="flex-1 text-left min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className={"text-[13px] font-semibold " + (isDone ? "text-green-300 line-through" : isSkipped ? "text-yellow-400/70 line-through" : "text-white")}>
-              {exercise.name}
-            </span>
-            {exercise.optional && <span className="text-[9px] text-[#6b6f78] border border-[#2a2c30] px-1.5 py-0.5 rounded-full">opt</span>}
+        {noLog ? (
+          <div className="flex-1 min-w-0">
+            {content}
+            {badges}
           </div>
-          <div className="flex gap-1.5 mt-1">
-            <span className="text-[10px] bg-green-950 text-green-400 border border-green-900 px-1.5 py-0.5 rounded-full">{exercise.sets}s</span>
-            <span className="text-[10px] bg-blue-950 text-blue-400 border border-blue-900 px-1.5 py-0.5 rounded-full">{exercise.reps}r</span>
-            <span className="text-[10px] bg-yellow-950 text-yellow-400 border border-yellow-900 px-1.5 py-0.5 rounded-full">{exercise.rest}</span>
-          </div>
-        </button>
+        ) : (
+          <button onClick={function() { setOpen(!open); }} className="flex-1 text-left min-w-0">
+            {content}
+            {badges}
+          </button>
+        )}
 
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {weight && <span className="text-[10px] text-green-400 font-bold">{weight}kg</span>}
-          <span className="text-[#6b6f78] text-xs">{open ? "▲" : "▼"}</span>
-        </div>
+        {!noLog && (
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {weight && <span className="text-[10px] text-green-400 font-bold">{weight}kg</span>}
+            <span className="text-[#6b6f78] text-xs">{open ? "▲" : "▼"}</span>
+          </div>
+        )}
       </div>
 
-      {open && (
+      {open && !noLog && (
         <div className="px-3 pb-3 border-t border-[#2a2c30] pt-2">
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-[#6b6f78]">Last weight:</span>
@@ -596,22 +626,23 @@ function RunExerciseCard({ exercise, status, onSetStatus, todayRun, lastRun, onL
   var setOpen   = openState[1];
   var isDone    = status === "done";
   var isSkipped = status === "skipped";
+  var hasIncline = !!exercise.hasIncline;
 
   var prefill = todayRun || lastRun;
   var distState   = useState(prefill ? String(prefill.distance) : "");
   var distance    = distState[0];
   var setDistance = distState[1];
-  var inclState   = useState(prefill ? String(prefill.incline) : "");
+  var inclState   = useState(prefill && prefill.incline ? String(prefill.incline) : "");
   var incline     = inclState[0];
   var setIncline  = inclState[1];
-  var spdState    = useState(prefill ? String(prefill.speed) : "");
+  var spdState    = useState(prefill && prefill.speed ? String(prefill.speed) : "");
   var speed       = spdState[0];
   var setSpeed    = spdState[1];
 
   function save() {
     var d = parseFloat(distance);
     if (!d || isNaN(d) || d <= 0) return;
-    onLogRun(d, incline.trim(), speed.trim());
+    onLogRun(d, hasIncline ? incline.trim() : "", speed.trim());
   }
 
   return (
@@ -654,7 +685,7 @@ function RunExerciseCard({ exercise, status, onSetStatus, todayRun, lastRun, onL
 
       {open && (
         <div className="px-3 pb-3 border-t border-[#2a2c30] pt-2 space-y-2">
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className={"grid gap-1.5 " + (hasIncline ? "grid-cols-3" : "grid-cols-2")}>
             <div>
               <label className="text-[10px] text-[#6b6f78] block mb-1">Distance (km)</label>
               <input type="number" min="0" step="0.1" value={distance}
@@ -662,13 +693,15 @@ function RunExerciseCard({ exercise, status, onSetStatus, todayRun, lastRun, onL
                 placeholder="km"
                 className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-green-600 focus:outline-none" />
             </div>
-            <div>
-              <label className="text-[10px] text-[#6b6f78] block mb-1">Incline (level)</label>
-              <input type="number" min="0" step="1" value={incline}
-                onChange={function(e) { setIncline(e.target.value); }}
-                placeholder="0-8"
-                className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-blue-600 focus:outline-none" />
-            </div>
+            {hasIncline && (
+              <div>
+                <label className="text-[10px] text-[#6b6f78] block mb-1">Incline (level)</label>
+                <input type="number" min="0" step="1" value={incline}
+                  onChange={function(e) { setIncline(e.target.value); }}
+                  placeholder="0-8"
+                  className="w-full bg-[#0e0f11] border border-[#2a2c30] rounded-lg px-2 py-1.5 text-[12px] text-white text-center focus:border-blue-600 focus:outline-none" />
+              </div>
+            )}
             <div>
               <label className="text-[10px] text-[#6b6f78] block mb-1">Speed (level)</label>
               <input type="number" min="0" step="1" value={speed}
@@ -872,9 +905,16 @@ function ProgressScreen() {
   var allEx       = UPPER_EXERCISES.concat(LOWER_EXERCISES);
   var loggedEx    = allEx.filter(function(e) { return strengthLog[e.id]?.value; });
 
-  var trResult      = useLS("treadmill_log", []);
-  var treadmillLog    = trResult[0];
-  var totalKm          = treadmillLog.reduce(function(s, e) { return s + (parseFloat(e.distance) || 0); }, 0);
+  var crResult   = useLS("cardio_log", {});
+  var cardioLog    = crResult[0];
+  var cardioExercises = LIGHT_EXERCISES.filter(function(e) { return e.type === "run"; });
+  var cardioEntries = [];
+  cardioExercises.forEach(function(ex) {
+    (cardioLog[ex.id] || []).forEach(function(e) {
+      cardioEntries.push(Object.assign({ exerciseName: ex.name }, e));
+    });
+  });
+  var totalKm = cardioEntries.reduce(function(s, e) { return s + (parseFloat(e.distance) || 0); }, 0);
 
   return (
     <div>
@@ -1006,20 +1046,25 @@ function ProgressScreen() {
         </Card>
       )}
 
-      {treadmillLog.length > 0 && (
+      {cardioEntries.length > 0 && (
         <Card className="mb-3">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[13px] font-bold text-white">🏃 Running Log</div>
+            <div className="text-[13px] font-bold text-white">🏃 Cardio Log</div>
             <div className="text-[12px] font-bold text-green-400">{totalKm.toFixed(1)} km total</div>
           </div>
           <div className="space-y-1.5">
-            {[].concat(treadmillLog).reverse().slice(0, 10).map(function(e, i) { return (
+            {[].concat(cardioEntries).sort(function(a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 10).map(function(e, i) { return (
               <div key={i} className="flex justify-between items-center py-1 border-b border-[#2a2c30] last:border-0">
-                <span className="text-[12px] text-[#8a8f99]">{e.date}</span>
-                <span className="text-[12px] font-bold text-white">{e.distance} km</span>
-                <span className="text-[10px] text-[#6b6f78]">
-                  {[e.incline && "incline " + e.incline, e.speed && "speed " + e.speed].filter(Boolean).join(" · ")}
-                </span>
+                <div>
+                  <div className="text-[12px] text-white font-semibold">{e.exerciseName}</div>
+                  <div className="text-[10px] text-[#6b6f78]">{e.date}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[12px] font-bold text-white">{e.distance} km</div>
+                  <div className="text-[10px] text-[#6b6f78]">
+                    {[e.incline && "incline " + e.incline, e.speed && "speed " + e.speed].filter(Boolean).join(" · ")}
+                  </div>
+                </div>
               </div>
             ); })}
           </div>
@@ -1046,8 +1091,8 @@ function ProgressScreen() {
   );
 }
 
-// Number of designated workout days per week (Mon/Tue/Wed/Thu/Fri)
-var WORKOUT_DAYS_PER_WEEK = 5;
+// Number of designated workout days per week (Mon/Tue/Wed/Thu/Fri/Sat)
+var WORKOUT_DAYS_PER_WEEK = 6;
 
 function WeeklySummaryCard() {
   var wlResult    = useLS("workout_log", {});
