@@ -43,7 +43,7 @@ const DIET_MEALS = [
 
 const SUPPLEMENTS_LIST = [
   { id: "s1", name: "Zincovit",  timing: "After breakfast, daily", icon: "🟡", color: "text-yellow-400", border: "border-yellow-800", bg: "bg-yellow-950/30" },
-  { id: "s6", name: "Livogen",   timing: "After lunch, daily",     icon: "🔴", color: "text-red-400",    border: "border-red-800",    bg: "bg-red-950/30"    },
+  { id: "s6", name: "Livogen",   timing: "After lunch, alternate days", icon: "🔴", color: "text-red-400",    border: "border-red-800",    bg: "bg-red-950/30"    },
 ];
 
 // ─────────────────────────────────────────────
@@ -333,7 +333,7 @@ function HomeScreen({ onNavigate }) {
         <div className="text-[13px] font-bold text-white mb-2">💊 Supplement Reminders</div>
         <div className="space-y-1">
           <div className="text-[12px] text-[#8a8f99]">🟡 Zincovit — after breakfast</div>
-          <div className="text-[12px] text-[#8a8f99]">🔴 Livogen — after lunch</div>
+          <div className="text-[12px] text-[#8a8f99]">🔴 Livogen — after lunch, alternate days</div>
         </div>
         <button onClick={function() { onNavigate("supplements"); }} className="mt-2 text-[11px] text-yellow-400">Track today →</button>
       </Card>
